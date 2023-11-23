@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whatsapp Chat Parser</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .content {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            background: url("https://i.pinimg.com/736x/b9/1d/c2/b91dc2113881469c07ac99ad9a024a01.jpg");
+            z-index: 0;
+            overflow-y: scroll;
+        }
+
+        .header {
+            z-index: 2;
+            display: flex;
+            height: 60px;
+            width: 100%;
+            position: fixed;
+            background-color: #202C33;
+
+        }
+
+        .user-icon {
+            height: 40px;
+            width: 40px;
+            border-radius: 50%;
+            background-color: white;
+            background-image: url('user.png');
+            background-clip: calc(10px - 20px);
+            margin-top: 10px;
+            margin-left: 30px;
+        }
+
+        .user-name {
+            font-size: 15px;
+            font-family: Helvetica, sans-serif;
+            text-align: center;
+            margin-top: 20px;
+            margin-left: 10px;
+            color: white;
+        }
+
+        .conversation-screen {
+            padding-top: 10px;
+            width: 100%;
+            margin-top: 60px;
+
+        }
+
+        .bubble {
+            font-size: 15px;
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            padding: 8px;
+            margin-left: 10px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            width: fit-content;
+            max-width: 80%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .sender-bubble {
+            background-color: #005C4B;
+            color: #E9EDEF;
+            position: relative;
+            float: right;
+            clear: both;
+
+            /* add this line */
+        }
+
+        .receiver-bubble {
+            background-color: #202C33;
+            color: #E9EDEF;
+            position: relative;
+            float: left;
+            clear: both;
+            /* add this line */
+        }
+
+        .time {
+            font-size: 10px;
+            float: right;
+            margin-left: 5px;
+            margin-right: 5px;
+            padding-top: 10px;
+        }
+
+        .encrypted-bubble {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            width: 100;
+            margin: 0px 20% 10px 20%;
+            padding: 10px;
+            font-size: 12px;
+            color: #F1D279;
+            text-align: center;
+            border-radius: 10px;
+            background-color: #182229;
+        }
+
+        .date-bubble {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            width: 100;
+            font-size: 12px;
+            margin: auto;
+            text-align: center;
+            background-color: #182229;
+            padding: 5px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            color: #789695;
+            width: fit-content;
+            clear: both;
+        }
+
+
+
+
+        /* Define the scrollbar style */
+        ::-webkit-scrollbar {
+            z-index: 10;
+            width: 10px;
+            height: 200px;
+        }
+
+        /* Handle */
+        ::-webkit-scrollbar-thumb {
+            background: #4CAF50;
+            /* Green color similar to WhatsApp */
+            border-radius: 4px;
+
+        }
+
+        /* Handle on hover */
+        ::-webkit-scrollbar-thumb:hover {
+            background: #45a049;
+            /* Darker green on hover */
+        }
+
+        /* Track */
+        ::-webkit-scrollbar-track {
+            background: none;
+            /* Light gray color */
+        }
+
+        /* Handle when scrolling */
+        ::-webkit-scrollbar-track-piece {
+            /* Darker gray color */
+            z-index: 10;
+        }
+
+
+
+        .trigger {
+            text-align: center;
+            padding: 7px 13px;
+            background: #3e3e3e;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            border: none;
+            border-radius: 5px;
+            font-family: cursive;
+        }
+
+        .modal {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(1.1);
+            transition: visibility 0s linear 0.25s, opacity 0.25s 0s, transform 0.25s;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 1rem 1.5rem;
+            width: 24rem;
+            border-radius: 0.5rem;
+        }
+
+        .close-button {
+            float: right;
+            width: 1.5rem;
+            line-height: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 0.25rem;
+            background-color: lightgray;
+        }
+
+        .close-button:hover {
+            background-color: darkgray;
+        }
+
+        .show-modal {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1.0);
+            transition: visibility 0s linear 0s, opacity 0.25s 0s, transform 0.25s;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="content" id="content">
+        <div class="header">
+            <div class="user-icon">
+
+            </div>
+            <div class="user-name">
+                Unknown
+            </div>
+        </div>
+        <div class="conversation-screen">
+            <div class="encrypted-bubble">
+                Messages to this chat and calls are now secured with end-to-end encryption. Tap for more info.
+            </div>
+        </div>
+    </div>
+    <div class="modal show-modal">
+        <div class="modal-content">
+            <span class="close-button">×</span>
+            <input type="file" id="fileInput" />
+            <pre id="output"></pre>
+        </div>
+    </div>
+
+
+    <script>
+
+        var modal = document.querySelector(".modal");
+        
+        var closeButton = document.querySelector(".close-button");
+        const conversationScreen = document.querySelector('.conversation-screen');
+        const userName = document.querySelector('.user-name');
+        var isSender = true;
+        var chatData;
+        var oldDate;
+        var oldName;
+        var file;
+        window.onload = function () {
+
+        }
+
+
+
+        function toggleModal() {
+            modal.classList.toggle("show-modal");
+        }
+
+        function windowOnClick(event) {
+            if (event.target === modal) {
+                toggleModal();
+            }
+        }
+
+       
+        closeButton.addEventListener("click", toggleModal);
+        window.addEventListener("click", windowOnClick);
+        const generateChat = () => {
+            toggleModal();
+            chatData.forEach((element, index) => {
+
+                if (index < 10) {
+                    console.log(element.name, chatData[index + 1]?.name);
+                }
+
+                if (oldName !== element.name) {
+                    isSender = !isSender;
+                }
+                const div = document.createElement('div');
+                if (oldDate !== element.date) {
+                    const dateBubble = document.createElement('div');
+                    dateBubble.classList.add('date-bubble');
+
+
+                    const dateParts = element.date.split("/");
+
+                    const day = dateParts[0];
+                    const month = dateParts[1];
+                    const year = `20${dateParts[2]}`; // Assuming the year is always in the format "YY"
+
+                    const date = new Date(year, month - 1, day);
+                    const formattedDate = date.toLocaleDateString("en-US", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric"
+                    });
+                    dateBubble.textContent = formattedDate;
+                    conversationScreen.append(dateBubble);
+                }
+                div.classList.add(isSender ? 'sender-bubble' : 'receiver-bubble', 'bubble');
+                div.textContent = element.message;
+                const dateSpan = document.createElement('span');
+                dateSpan.classList.add('time');
+                dateSpan.textContent = element.time;
+                div.append(dateSpan);
+                conversationScreen.append(div);
+                oldName = element.name;
+                oldDate = element.date;
+            });
+            userName.innerHTML = chatData[0].name;
+        }
+        document.getElementById('fileInput').addEventListener('change', function (event) {
+            file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+
+
+                    const content = e.target.result;
+                    const messages = content.split('\n');
+
+                    const regex = /^(\d{2}\/\d{2}\/\d{2}, \d{1,2}:\d{2} [ap]m) - (.+?): (.+)$/;
+                    chatData = messages.map(message => {
+                        const match = message.match(regex);
+                        if (match) {
+                            const [fullMatch, dateTime, name, messageContent] = match;
+                            const [date, time] = dateTime.split(', ');
+                            return {
+                                date,
+                                time,
+                                name,
+                                message: messageContent,
+                            };
+                        } else {
+                            return null;
+                        }
+                    }).filter(Boolean);
+                    generateChat();
+                };
+
+                reader.readAsText(file);
+            } else {
+                alert('No file selected');
+            }
+        });
+    </script>
+</body>
+
+</html>
